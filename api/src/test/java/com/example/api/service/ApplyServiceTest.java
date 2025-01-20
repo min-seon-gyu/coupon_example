@@ -52,4 +52,28 @@ class ApplyServiceTest {
 
         assertThat(count).isEqualTo(100L);
     }
+
+    @Test
+    public void 레디스_여러명응모() throws InterruptedException {
+        int threadCount = 1000;
+        ExecutorService executorService = Executors.newFixedThreadPool(32);
+        CountDownLatch latch = new CountDownLatch(threadCount);
+
+        for(int i = 0 ; i < threadCount ; i++){
+            long userId = i;
+            executorService.submit(() -> {
+                try {
+                    applyService.redis_apply(userId);
+                } finally {
+                    latch.countDown();
+                }
+            });
+        }
+
+        latch.await();
+
+        long count = couponRepository.count();
+
+        assertThat(count).isEqualTo(100L);
+    }
 }
